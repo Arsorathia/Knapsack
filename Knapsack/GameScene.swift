@@ -46,7 +46,7 @@ class GameScene: SKScene {
             {
                 let item:SKSpriteNode = newItem()
                 item.position = CGPointMake((CGRectGetMidX(self.frame) - 150 + CGFloat(60*i)), CGRectGetMidY(self.frame) + 150)
-                item.userData = NSMutableDictionary(dictionary: ["weight":12.2, "value": i])
+                item.userData = NSMutableDictionary(dictionary: ["weight":12.2, "value": Int(arc4random_uniform(100)), "shelfPlace": i, "location" : "shelf"])
                 item.name = "item"
                 self.addChild(item)
             }
@@ -100,6 +100,7 @@ class GameScene: SKScene {
     
     var touchStarted: NSTimeInterval?
     let longTapTime: NSTimeInterval = 0.5
+    var itemInCenter: SKNode?
     
     func itemStartTouched(touch:UITouch, touchedNode:SKNode) -> Void {
         
@@ -121,10 +122,47 @@ class GameScene: SKScene {
     
     func itemShortTapped(touchedNode:SKNode) -> Void {
         
+        if itemInCenter == nil {
+            
+            moveItemToCenter(touchedNode)
+
+        } else {
+            let nodeLocation = touchedNode.userData?["location"]
+            if nodeLocation! as! String == "center" {
+                
+                print("Center Node Touched")
+                
+            } else {
+                
+                swapCenterItem(touchedNode)
+                
+            }
+
+        }
+        
+    }
+    
+    
+    func moveItemToCenter(touchedNode:SKNode) -> Void{
+        
         let moveToCenter:SKAction = SKAction.moveTo(CGPointMake(CGRectGetMidX(self.frame), CGRectGetMidY(self.frame)), duration: 1)
         let scaleUp:SKAction = SKAction.scaleBy(2, duration: 1)
         touchedNode.runAction(SKAction.group([moveToCenter, scaleUp]))
+        touchedNode.userData?["location"] = "center"
+        itemInCenter = touchedNode
         
+    }
+    
+    func swapCenterItem(touchedNode:SKNode) -> Void{
+       
+        let originalPosition = Int(itemInCenter!.userData?["shelfPlace"] as! NSNumber)
+        let originalCoord = CGPointMake((CGRectGetMidX(self.frame) - 150 + CGFloat(60*originalPosition)), CGRectGetMidY(self.frame) + 150)
+        let moveToShelf:SKAction = SKAction.moveTo(originalCoord, duration: 1)
+        let scaleBack:SKAction = SKAction.scaleBy(0.5, duration: 1)
+        itemInCenter?.runAction(SKAction.group([moveToShelf, scaleBack]))
+        itemInCenter?.userData?["location"] = "shelf"
+        moveItemToCenter(touchedNode)
+
     }
     
     func itemLongTapped(touchedNode:SKNode) -> Void {
