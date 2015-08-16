@@ -114,16 +114,23 @@ class GameScene: SKScene {
                 if timeEnded - touchStarted! >= longTapTime {
                     itemLongTapped(touchedNode)
                 } else {
-                    print("Short Tap")
+                    itemShortTapped(touchedNode)
                 }
             }
         }
     
+    func itemShortTapped(touchedNode:SKNode) -> Void {
+        
+        let moveToCenter:SKAction = SKAction.moveTo(CGPointMake(CGRectGetMidX(self.frame), CGRectGetMidY(self.frame)), duration: 1)
+        let scaleUp:SKAction = SKAction.scaleBy(2, duration: 1)
+        touchedNode.runAction(SKAction.group([moveToCenter, scaleUp]))
+        
+    }
+    
     func itemLongTapped(touchedNode:SKNode) -> Void {
         
         let valueOfItem = touchedNode.userData?["value"]
-        print("Item of value \(valueOfItem!) was touched")
-        
+        print("Item of value \(valueOfItem!) was long touched")
     }
     
     
