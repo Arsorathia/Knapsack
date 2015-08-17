@@ -14,7 +14,7 @@ class GameScene: SKScene {
     override func didMoveToView(view: SKView) {
         
         createScene()
-        
+
     }
     
     override func update(currentTime: CFTimeInterval) {
@@ -101,6 +101,7 @@ class GameScene: SKScene {
     var touchStarted: NSTimeInterval?
     let longTapTime: NSTimeInterval = 0.5
     var itemInCenter: SKNode?
+    var centerDragStarted:Bool?
     
     func itemStartTouched(touch:UITouch, touchedNode:SKNode) -> Void {
         
@@ -143,7 +144,7 @@ class GameScene: SKScene {
     }
     
     
-    func moveItemToCenter(touchedNode:SKNode) -> Void{
+    func moveItemToCenter( touchedNode:SKNode) -> Void{
         
         let moveToCenter:SKAction = SKAction.moveTo(CGPointMake(CGRectGetMidX(self.frame), CGRectGetMidY(self.frame)), duration: 1)
         let scaleUp:SKAction = SKAction.scaleBy(2, duration: 1)
@@ -201,9 +202,40 @@ class GameScene: SKScene {
                 }
             }
             touchStarted = nil
+            if centerDragStarted == true {
+                snapBackfromCenterDrag(touchedNode, touch: touch)
+            }
+            centerDragStarted = false
         }
     }
     
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        
+        for touch in touches {
+            let location = touch.locationInNode(self)
+            let touchedNode = nodeAtPoint(location)
+            if (touchedNode.userData != nil) {
+                let nodeLocation = touchedNode.userData?["location"]
+                if nodeLocation! as! String == "center" {
+                   centerDrag(touchedNode, touch: touch)
+                }
+            }
+
+        }
+    }
+    
+    func centerDrag(touchedNode:SKNode, touch:UITouch){
+        let location = touch.locationInNode(self)
+        touchedNode.position = location
+        centerDragStarted = true
+    }
+    
+    func snapBackfromCenterDrag(touchedNode:SKNode, touch:UITouch){
+     
+        let moveToCenter:SKAction = SKAction.moveTo(CGPointMake(CGRectGetMidX(self.frame), CGRectGetMidY(self.frame)), duration: 0.1)
+        touchedNode.runAction(moveToCenter)
+        
+    }
     
     
 }
